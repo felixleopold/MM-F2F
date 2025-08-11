@@ -8,6 +8,7 @@ Accepted by ACL 2025
 <a href="https://github.com/Linyx1125/MM-F2F"><img src="https://img.shields.io/badge/Code-Github-blue"></a>
 <a href="https://arxiv.org/abs/2505.12654"><img src="https://img.shields.io/badge/arXiv-2505.12654-red"></a>
 <a href="#Citation"><img src="https://img.shields.io/badge/Citation-BibTeX-green"></a>
+<a href="https://aclanthology.org/2025.acl-long.743/"><img src="https://img.shields.io/badge/Paper-ACL-ed1c24"></a>
 
 </center>
 
@@ -92,6 +93,32 @@ If you find our work helpful or relevant to your research, please consider citin
       archivePrefix={arXiv},
       primaryClass={cs.CL},
       url={https://arxiv.org/abs/2505.12654}, 
+}
+```
+
+or
+
+```
+@inproceedings{lin-etal-2025-predicting,
+      title = "Predicting Turn-Taking and Backchannel in Human-Machine Conversations Using Linguistic, Acoustic, and Visual Signals",
+      author = "Lin, Yuxin  and
+            Zheng, Yinglin  and
+            Zeng, Ming  and
+            Shi, Wangzheng",
+      editor = "Che, Wanxiang  and
+            Nabende, Joyce  and
+            Shutova, Ekaterina  and
+            Pilehvar, Mohammad Taher",
+      booktitle = "Proceedings of the 63rd Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers)",
+      month = jul,
+      year = "2025",
+      address = "Vienna, Austria",
+      publisher = "Association for Computational Linguistics",
+      url = "https://aclanthology.org/2025.acl-long.743/",
+      doi = "10.18653/v1/2025.acl-long.743",
+      pages = "15310--15322",
+      ISBN = "979-8-89176-251-0",
+      abstract = "This paper addresses the gap in predicting turn-taking and backchannel actions in human-machine conversations using multi-modal signals (linguistic, acoustic, and visual). To overcome the limitation of existing datasets, we propose an automatic data collection pipeline that allows us to collect and annotate over 210 hours of human conversation videos. From this, we construct a Multi-Modal Face-to-Face (MM-F2F) human conversation dataset, including over 1.5M words and corresponding turn-taking and backchannel annotations from approximately 20M frames. Additionally, we present an end-to-end framework that predicts the probability of turn-taking and backchannel actions from multi-modal signals. The proposed model emphasizes the interrelation between modalities and supports any combination of text, audio, and video inputs, making it adaptable to a variety of realistic scenarios. Our experiments show that our approach achieves state-of-the-art performance on turn-taking and backchannel prediction tasks, achieving a 10{\%} increase in F1-score on turn-taking and a 33{\%} increase on backchannel prediction. Our dataset and code are publicly available online to ease of subsequent research."
 }
 ```
 
