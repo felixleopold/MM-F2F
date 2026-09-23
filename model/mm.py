@@ -1,9 +1,9 @@
 import torch
 from torch import nn
 
-from transformers import AutoTokenizer, GPT2Config, GPT2Model
-from transformers import AutoProcessor, HubertConfig, HubertModel
-from transformers import AutoImageProcessor, VideoMAEConfig, VideoMAEModel
+from transformers import GPT2Config, GPT2Model
+from transformers import HubertConfig, HubertModel
+from transformers import VideoMAEConfig, VideoMAEModel
 
 from model.fusion import LMF
 
@@ -109,6 +109,8 @@ def text_processor(text):
 
 
 def load_processors():
+    from transformers import AutoImageProcessor, AutoProcessor, AutoTokenizer
+
     tokenizer = AutoTokenizer.from_pretrained("openai-community/gpt2")
     tokenizer.pad_token = tokenizer.eos_token
     audio_processor = AutoProcessor.from_pretrained("facebook/hubert-large-ls960-ft")
