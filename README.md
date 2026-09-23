@@ -39,12 +39,15 @@ Reachy:
 ssh -N -R 127.0.0.1:18788:127.0.0.1:8788 luitpoldserver
 ```
 
-In the Reachy agent, `MMF2F_URL=http://127.0.0.1:18788` enables **shadow**
-predictions during GPT Live conversations. They appear as `mmf2f` events with a
-label, class probabilities, and elapsed time. They do not change Reachy's speech
-timing or responses. Empty `MMF2F_URL` disables capture and forwarding. This model
-was trained on human conversation videos, so its classes need evaluation against
-real Reachy interactions before they control the robot.
+The Reachy integration observes both its subscription Voice and native GPT Live
+routes. Start a time-limited shadow window on the server with
+`~/reachy/venv/bin/python ~/reachy/agent/scripts/mmf2f_research.py start --minutes 15`.
+Use `status` to inspect it and `stop` to clear it. The window expires automatically,
+without changing the selected Voice route. Predictions appear as `mmf2f` events
+with a label, class probabilities, and elapsed time. They do not change Reachy's
+speech timing or responses. This model was trained on human conversation videos,
+so its classes need evaluation against real Reachy interactions before they control
+the robot.
 
 
 <center>
