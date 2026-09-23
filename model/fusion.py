@@ -1,7 +1,6 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torch.autograd import Variable
 from torch.nn.parameter import Parameter
 from torch.nn.init import xavier_normal_
 
@@ -39,19 +38,14 @@ class LMF(nn.Module):
     def forward(self, text_x, audio_x, video_x):
         temp_x = text_x if text_x is not None else audio_x
         batch_size = temp_x.data.shape[0]
-        if temp_x.is_cuda:
-            DTYPE = torch.cuda.FloatTensor
-        else:
-            DTYPE = torch.FloatTensor
-
         if text_x is not None:
-            _text_h = torch.cat((Variable(torch.ones(batch_size, 1).type(DTYPE), requires_grad=False), text_x), dim=1)
+            _text_h = torch.cat((text_x.new_ones(batch_size, 1), text_x), dim=1)
             fusion_text = torch.matmul(_text_h, self.factor_1)
         if audio_x is not None:
-            _audio_h = torch.cat((Variable(torch.ones(batch_size, 1).type(DTYPE), requires_grad=False), audio_x), dim=1)
+            _audio_h = torch.cat((audio_x.new_ones(batch_size, 1), audio_x), dim=1)
             fusion_audio = torch.matmul(_audio_h, self.factor_2)
         if video_x is not None:
-            _video_h = torch.cat((Variable(torch.ones(batch_size, 1).type(DTYPE), requires_grad=False), video_x), dim=1)
+            _video_h = torch.cat((video_x.new_ones(batch_size, 1), video_x), dim=1)
             fusion_video = torch.matmul(_video_h, self.factor_3)
 
         if text_x is None:

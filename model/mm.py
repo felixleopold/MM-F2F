@@ -1,17 +1,18 @@
 import torch
 from torch import nn
 
-from transformers import AutoTokenizer, GPT2Model
-from transformers import AutoProcessor, HubertModel
-from transformers import AutoImageProcessor, VideoMAEModel
+from transformers import AutoTokenizer, GPT2Config, GPT2Model
+from transformers import AutoProcessor, HubertConfig, HubertModel
+from transformers import AutoImageProcessor, VideoMAEConfig, VideoMAEModel
 
 from model.fusion import LMF
 
 
 class LanguageModel(nn.Module):
-    def __init__(self, pretrained_model_name_or_path="openai-community/gpt2", return_embeddings=False):
+    def __init__(self, pretrained_model_name_or_path="openai-community/gpt2", return_embeddings=False, pretrained=True):
         super(LanguageModel, self).__init__()
-        self.transformer = GPT2Model.from_pretrained(pretrained_model_name_or_path)
+        self.transformer = (GPT2Model.from_pretrained(pretrained_model_name_or_path)
+                            if pretrained else GPT2Model(GPT2Config()))
         self.return_embeddings = return_embeddings
         hidden_size = self.transformer.config.n_embd
         self.proj = nn.Linear(hidden_size, 256)
@@ -27,9 +28,10 @@ class LanguageModel(nn.Module):
     
 
 class AudioModel(nn.Module):
-    def __init__(self, pretrained_model_name_or_path="facebook/hubert-base-ls960", return_embeddings=False):
+    def __init__(self, pretrained_model_name_or_path="facebook/hubert-base-ls960", return_embeddings=False, pretrained=True):
         super(AudioModel, self).__init__()
-        self.hubert = HubertModel.from_pretrained(pretrained_model_name_or_path)
+        self.hubert = (HubertModel.from_pretrained(pretrained_model_name_or_path)
+                       if pretrained else HubertModel(HubertConfig()))
         self.return_embeddings = return_embeddings
         hidden_size = self.hubert.config.hidden_size
         self.avg_pool = nn.AdaptiveAvgPool1d(1)
@@ -46,9 +48,10 @@ class AudioModel(nn.Module):
     
 
 class VisionModel(nn.Module):
-    def __init__(self, pretrained_model_name_or_path="MCG-NJU/videomae-base", return_embeddings=False):
+    def __init__(self, pretrained_model_name_or_path="MCG-NJU/videomae-base", return_embeddings=False, pretrained=True):
         super(VisionModel, self).__init__()
-        self.model = VideoMAEModel.from_pretrained(pretrained_model_name_or_path)
+        self.model = (VideoMAEModel.from_pretrained(pretrained_model_name_or_path)
+                      if pretrained else VideoMAEModel(VideoMAEConfig(use_mean_pooling=False)))
         self.return_embeddings = return_embeddings
         hidden_size = self.model.config.hidden_size
         self.avg_pool = nn.AdaptiveAvgPool1d(1)
@@ -65,16 +68,16 @@ class VisionModel(nn.Module):
     
 
 class LanguageAudioVisionModel(nn.Module):
-    def __init__(self, text_ckpt_path=None, audio_ckpt_path=None, vision_ckpt_path=None):
+    def __init__(self, text_ckpt_path=None, audio_ckpt_path=None, vision_ckpt_path=None, pretrained=True):
         super(LanguageAudioVisionModel, self).__init__()
 
-        self.text_model = LanguageModel(return_embeddings=True)
+        self.text_model = LanguageModel(return_embeddings=True, pretrained=pretrained)
         if text_ckpt_path is not None:
             self.text_model.load_state_dict(torch.load(text_ckpt_path), strict=False)
-        self.audio_model = AudioModel(return_embeddings=True)
+        self.audio_model = AudioModel(return_embeddings=True, pretrained=pretrained)
         if audio_ckpt_path is not None:
             self.audio_model.load_state_dict(torch.load(audio_ckpt_path), strict=False)
-        self.vision_model = VisionModel(return_embeddings=True)
+        self.vision_model = VisionModel(return_embeddings=True, pretrained=pretrained)
         if vision_ckpt_path is not None:
             self.vision_model.load_state_dict(torch.load(vision_ckpt_path), strict=False)
 
@@ -110,4 +113,15 @@ def load_processors():
     tokenizer.pad_token = tokenizer.eos_token
     audio_processor = AutoProcessor.from_pretrained("facebook/hubert-large-ls960-ft")
     video_processor = AutoImageProcessor.from_pretrained("MCG-NJU/videomae-base")
+    return tokenizer, text_processor, audio_processor, video_processor
+
+
+def load_inference_processors():
+    """Load only the three processors used by the released checkpoint."""
+    from transformers import GPT2TokenizerFast, VideoMAEImageProcessor, Wav2Vec2FeatureExtractor
+
+    tokenizer = GPT2TokenizerFast.from_pretrained("openai-community/gpt2")
+    tokenizer.pad_token = tokenizer.eos_token
+    audio_processor = Wav2Vec2FeatureExtractor.from_pretrained("facebook/hubert-large-ls960-ft")
+    video_processor = VideoMAEImageProcessor.from_pretrained("MCG-NJU/videomae-base", use_fast=False)
     return tokenizer, text_processor, audio_processor, video_processor
