@@ -1,5 +1,52 @@
 # Predicting Turn-Taking and Backchannel in Human-Machine Conversations Using Linguistic, Acoustic, and Visual Signals
 
+## Running the released checkpoint
+
+`predict_clip.py` is a CPU/CUDA/Apple Silicon runner for the released checkpoint. It
+accepts a transcript, 16 final video frames, and up to 8 seconds of trailing audio.
+It avoids the upstream demo's separate WhisperX and RetinaFace models. A face must
+be visible in the video, or you can specify its pixel box with `--face-box X Y W H`.
+
+Download [`multi-modal-deid.pt`](https://drive.google.com/file/d/1jREeRdQP21jpsqehSj438jJDzBZtMRci/view?usp=sharing)
+from the authors. Its SHA-256 is
+`861f9979dc7782a89602545fa995f4e4c4c1b4330d2c2e7604890ee1d089201d`
+(1,222,899,309 bytes). Keep it outside Git.
+
+```bash
+python3.13 -m venv .venv
+.venv/bin/python -m pip install -r requirements-inference.txt
+.venv/bin/python predict_clip.py \
+  --checkpoint /path/to/multi-modal-deid.pt \
+  --input example/input_1.mp4 \
+  --text "Transcript spoken up to this point"
+```
+
+For the CPU-only server, install the CPU PyTorch wheel first:
+
+```bash
+.venv/bin/python -m pip install torch==2.14.0 --index-url https://download.pytorch.org/whl/cpu
+.venv/bin/python -m pip install -r requirements-inference.txt
+```
+
+`serve.py` loads the model once and exposes `GET /health` and `POST /predict`. The
+worker expects JSON with `text`, `audio_pcm16_b64` (16 kHz mono signed PCM), and
+`frames_jpeg_b64` (16 JPEGs). Reachy also sends `faces_cropped: true` for frames
+cropped by its existing tracker. Bind the worker to localhost and use a private tunnel from
+Reachy:
+
+```bash
+.venv/bin/python serve.py --checkpoint /path/to/multi-modal-deid.pt --device auto
+ssh -N -R 127.0.0.1:18788:127.0.0.1:8788 luitpoldserver
+```
+
+In the Reachy agent, `MMF2F_URL=http://127.0.0.1:18788` enables **shadow**
+predictions during GPT Live conversations. They appear as `mmf2f` events with a
+label, class probabilities, and elapsed time. They do not change Reachy's speech
+timing or responses. Empty `MMF2F_URL` disables capture and forwarding. This model
+was trained on human conversation videos, so its classes need evaluation against
+real Reachy interactions before they control the robot.
+
+
 <center>
 Yuxin Lin, Yinglin Zheng, Ming Zeng, Wangzheng Shi
 
