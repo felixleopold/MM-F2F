@@ -75,8 +75,9 @@ def main():
     args = parser.parse_args()
     PredictionHandler.predictor = Predictor(args.checkpoint, args.device)
     PredictionHandler.token = os.environ.get("MMF2F_TOKEN")
+    server = HTTPServer((args.host, args.port), PredictionHandler)
     print(f"MM-F2F ready on {args.host}:{args.port} ({PredictionHandler.predictor.device})", flush=True)
-    HTTPServer((args.host, args.port), PredictionHandler).serve_forever()
+    server.serve_forever()
 
 
 if __name__ == "__main__":
